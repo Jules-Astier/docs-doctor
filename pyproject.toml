@@ -1,9 +1,14 @@
 [project]
 name = "docs-doctor"
 version = "0.1.0"
-description = "A LangGraph-based agent system with FastAPI and Streamlit interfaces"
+description = "A LangGraph-based MoE agent with a package driven knowledge base"
 authors = [
     { name = "Jules Astier", email = "astier.jules@gmail.com" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent"
 ]
 readme = "README.md"
 license = { text = "LICENSE" }
