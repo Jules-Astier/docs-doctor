@@ -11,7 +11,7 @@ setup(
     author_email="astier.jules@gmail.com",
     license="LICENSE",
     python_requires=">=3.12",
-    packages=find_packages(include=['docs_doctor', 'docs_doctor.*']),
+    packages=find_packages(where='src',include=['docs_doctor']),
     
     install_requires=[
         "langgraph>=0.2.6",
