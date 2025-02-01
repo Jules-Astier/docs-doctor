@@ -11,6 +11,7 @@ setup(
     author_email="astier.jules@gmail.com",
     license="LICENSE",
     python_requires=">=3.12",
+	package_dir={"": "src"},
     packages=find_packages(where='src',include=['docs_doctor']),
     
     install_requires=[
