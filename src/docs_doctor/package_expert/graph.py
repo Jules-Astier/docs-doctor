@@ -10,10 +10,10 @@ from langchain_core.runnables import RunnableConfig
 from langgraph.graph import StateGraph
 from langgraph.prebuilt import ToolNode
 
-from src.agent.package_expert.configuration import Configuration
-from src.agent.package_expert.state import InputState, State
-from src.agent.package_expert.tools import TOOLS
-from src.agent.utils import call_model
+from src.docs_doctor.package_expert.configuration import Configuration
+from src.docs_doctor.package_expert.state import InputState, State
+from src.docs_doctor.package_expert.tools import TOOLS
+from src.docs_doctor.utils import call_model
 
 # Define the function that calls the model
 
