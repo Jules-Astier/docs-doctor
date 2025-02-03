@@ -45,6 +45,8 @@ class Settings(BaseSettings):
     USE_AWS_BEDROCK: bool = False
     USE_FAKE_MODEL: bool = False
 
+    OLLAMA_BASE_URL: str = "http://localhost:11434" 
+
     # If DEFAULT_MODEL is None, it will be set in model_post_init
     DEFAULT_MODEL: AllModelEnum | None = None  # type: ignore[assignment]
     AVAILABLE_MODELS: set[AllModelEnum] = set()  # type: ignore[assignment]

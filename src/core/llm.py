@@ -4,6 +4,7 @@ from typing import TypeAlias
 from langchain_anthropic import ChatAnthropic
 from langchain_aws import ChatBedrock
 from langchain_community.chat_models import FakeListChatModel
+from langchain_community.chat_models.ollama import ChatOllama
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_groq import ChatGroq
 from langchain_openai import ChatOpenAI
@@ -18,6 +19,7 @@ from schema.models import (
     GoogleModelName,
     GroqModelName,
     OpenAIModelName,
+    OllamaModelName,
 )
 
 _MODEL_TABLE = {
@@ -33,9 +35,16 @@ _MODEL_TABLE = {
     GroqModelName.LLAMA_GUARD_3_8B: "llama-guard-3-8b",
     AWSModelName.BEDROCK_HAIKU: "anthropic.claude-3-5-haiku-20241022-v1:0",
     FakeModelName.FAKE: "fake",
+    OllamaModelName.LLAMA2: "llama2",
+    OllamaModelName.MISTRAL: "mistral",
+    OllamaModelName.CODELLAMA: "codellama",
+    OllamaModelName.NEURAL_CHAT: "neural-chat",
+    OllamaModelName.PHI4: "phi4",
+    OllamaModelName.LLAMA3: 'llama3.1:8b',
+    OllamaModelName.DEEPSEEKR1: 'deepseek-r1:8b',
 }
 
-ModelT: TypeAlias = ChatOpenAI | ChatAnthropic | ChatGoogleGenerativeAI | ChatGroq | ChatBedrock
+ModelT: TypeAlias = ChatOpenAI | ChatAnthropic | ChatGoogleGenerativeAI | ChatGroq | ChatBedrock | ChatOllama
 
 
 @cache
@@ -66,5 +75,12 @@ def get_model(model_name: AllModelEnum, /) -> ModelT:
         return ChatGroq(model=api_model_name, temperature=0.5)
     if model_name in AWSModelName:
         return ChatBedrock(model_id=api_model_name, temperature=0.5)
+    if model_name in OllamaModelName:
+        return ChatOllama(
+            model=api_model_name,
+            temperature=0.5,
+            streaming=True,
+            base_url=settings.OLLAMA_BASE_URL,  # Add this to your settings
+        )
     if model_name in FakeModelName:
         return FakeListChatModel(responses=["This is a test response from the fake model."])
