@@ -8,7 +8,7 @@ from langchain_core.messages import BaseMessage
 from langchain_openai import OpenAIEmbeddings
 from langchain_core.runnables import RunnableConfig
 
-from core.llm import get_model, settings
+from src.core.llm import get_model, settings
 
 def get_message_text(msg: BaseMessage) -> str:
     """Get the text content of a message."""
