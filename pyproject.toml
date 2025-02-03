@@ -25,6 +25,7 @@ dependencies = [
     "langchain-google-genai ~=2.0.5",
     "langchain-groq ~=0.2.1",
     "langchain-aws ~=0.2.7",
+    "langchain-ollama ~=0.2.3",
     "pydantic ~=2.10.1",
     "pydantic-settings ~=2.6.1",
     "setuptools ~=75.6.0",
