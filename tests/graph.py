@@ -1,4 +1,4 @@
-from src.agent import graph
+from src.docs_doctor import graph
 
 async def test_react_agent_simple_passthrough() -> None:
     res = await graph.ainvoke(
