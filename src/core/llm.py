@@ -8,8 +8,8 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_groq import ChatGroq
 from langchain_openai import ChatOpenAI
 
-from src.core.settings import settings
-from src.schema.models import (
+from core.settings import settings
+from schema.models import (
     AllModelEnum,
     AnthropicModelName,
     AWSModelName,

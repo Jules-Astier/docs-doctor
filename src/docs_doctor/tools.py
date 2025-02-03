@@ -14,8 +14,8 @@ from langchain_core.tools import InjectedToolCallId, BaseTool, tool
 from langchain_core.messages import ToolMessage, ChatMessage, HumanMessage
 from langchain_core.runnables import RunnableConfig
 
-from src.docs_doctor.package_expert.graph import create_package_expert
-from src.docs_doctor.utils import supabase
+from docs_doctor.package_expert.graph import create_package_expert
+from docs_doctor.utils import supabase
 
 # For testing the package experts
 pydantic_ai_expert = create_package_expert('pydantic_ai')
