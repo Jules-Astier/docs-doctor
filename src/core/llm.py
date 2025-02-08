@@ -9,78 +9,17 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_groq import ChatGroq
 from langchain_openai import ChatOpenAI
 
-from core.settings import settings
-from schema.models import (
-    AllModelEnum,
-    AnthropicModelName,
-    AWSModelName,
-    DeepseekModelName,
-    FakeModelName,
-    GoogleModelName,
-    GroqModelName,
-    OpenAIModelName,
-    OllamaModelName,
-)
-
-_MODEL_TABLE = {
-    OpenAIModelName.GPT_4O_MINI: "gpt-4o-mini",
-    OpenAIModelName.GPT_4O: "gpt-4o",
-    DeepseekModelName.DEEPSEEK_CHAT: "deepseek-chat",
-    AnthropicModelName.HAIKU_3: "claude-3-haiku-20240307",
-    AnthropicModelName.HAIKU_35: "claude-3-5-haiku-latest",
-    AnthropicModelName.SONNET_35: "claude-3-5-sonnet-latest",
-    GoogleModelName.GEMINI_15_FLASH: "gemini-1.5-flash",
-    GroqModelName.LLAMA_31_8B: "llama-3.1-8b-instant",
-    GroqModelName.LLAMA_33_70B: "llama-3.3-70b-versatile",
-    GroqModelName.LLAMA_GUARD_3_8B: "llama-guard-3-8b",
-    AWSModelName.BEDROCK_HAIKU: "anthropic.claude-3-5-haiku-20241022-v1:0",
-    FakeModelName.FAKE: "fake",
-    OllamaModelName.LLAMA2: "llama2",
-    OllamaModelName.MISTRAL: "mistral",
-    OllamaModelName.CODELLAMA: "codellama",
-    OllamaModelName.NEURAL_CHAT: "neural-chat",
-    OllamaModelName.PHI4: "phi4",
-    OllamaModelName.LLAMA3: 'llama3.1:8b',
-    OllamaModelName.DEEPSEEKR1: 'deepseek-r1:8b',
-}
-
-ModelT: TypeAlias = ChatOpenAI | ChatAnthropic | ChatGoogleGenerativeAI | ChatGroq | ChatBedrock | ChatOllama
-
+from core.settings import settings, OpenRouterModel
 
 @cache
-def get_model(model_name: AllModelEnum, /) -> ModelT:
+def get_model(model: str) -> ChatOpenAI:
     # NOTE: models with streaming=True will send tokens as they are generated
     # if the /stream endpoint is called with stream_tokens=True (the default)
-    api_model_name = _MODEL_TABLE.get(model_name)
-    if not api_model_name:
-        raise ValueError(f"Unsupported model: {model_name}")
-
-    if model_name in OpenAIModelName:
-        return ChatOpenAI(model=api_model_name, temperature=0.5, streaming=True)
-    if model_name in DeepseekModelName:
-        return ChatOpenAI(
-            model=api_model_name,
-            temperature=0.5,
-            streaming=True,
-            openai_api_base="https://api.deepseek.com",
-            openai_api_key=settings.DEEPSEEK_API_KEY,
-        )
-    if model_name in AnthropicModelName:
-        return ChatAnthropic(model=api_model_name, temperature=0.5, streaming=True)
-    if model_name in GoogleModelName:
-        return ChatGoogleGenerativeAI(model=api_model_name, temperature=0.5, streaming=True)
-    if model_name in GroqModelName:
-        if model_name == GroqModelName.LLAMA_GUARD_3_8B:
-            return ChatGroq(model=api_model_name, temperature=0.0)
-        return ChatGroq(model=api_model_name, temperature=0.5)
-    if model_name in AWSModelName:
-        return ChatBedrock(model_id=api_model_name, temperature=0.5)
-    if model_name in OllamaModelName:
-        return ChatOllama(
-            model=api_model_name,
-            temperature=0.5,
-            streaming=True,
-            base_url=settings.OLLAMA_BASE_URL,  # Add this to your settings
-        )
-    if model_name in FakeModelName:
-        return FakeListChatModel(responses=["This is a test response from the fake model."])
+    print("MODEL: ", model)
+    return ChatOpenAI(
+        model=model,
+        temperature=0.5,
+        streaming=True,
+        openai_api_base='https://openrouter.ai/api/v1',
+        openai_api_key=settings.OPEN_ROUTER_API_KEY,
+    )

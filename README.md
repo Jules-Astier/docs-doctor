@@ -84,6 +84,31 @@ Package-MoE uses a multi-layer architecture:
 4. **Consensus Manager**: Combines and validates expert responses
 5. **Update Manager**: Handles package information updates
 
+# CLI Commands for `docs-doctor`
+
+## Command Group
+
+- **`cli`**: Command line interface for docs-doctor.
+
+## Commands
+
+1. **`serve`**
+   - **Description**: Serves the Streamlit app.
+   - **Options**:
+     - `--host`:
+       - **Default**: `localhost`
+       - **Help**: Host to run the Streamlit app on.
+     - `--port`:
+       - **Default**: `8501`
+       - **Help**: Port to run the Streamlit app on.
+
+## Usage Example
+
+To run the Streamlit app, use the following command in your terminal:
+
+```bash
+python cli.py serve --host <your_host> --port <your_port>
+
 ## Contributing
 
 We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on:
@@ -109,3 +134,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - LangGraph team for the workflow framework
 - All package maintainers who help keep documentation updated
 - Our contributors and the open source community -->
+```

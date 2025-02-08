@@ -1,26 +1,49 @@
+import socket
 from typing import Annotated, Any
 
 from dotenv import find_dotenv
-from pydantic import BeforeValidator, HttpUrl, SecretStr, TypeAdapter, computed_field
+from pydantic import BeforeValidator, HttpUrl, SecretStr, TypeAdapter, computed_field, BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from schema.models import (
-    AllModelEnum,
-    AnthropicModelName,
-    AWSModelName,
-    DeepseekModelName,
-    FakeModelName,
-    GoogleModelName,
-    GroqModelName,
-    OpenAIModelName,
-    Provider,
-)
+import requests
+from utils.multiprocessing import parallel_execute
+def check_model_tools(model):
+    try:
+        endpoints = requests.get(f"https://openrouter.ai/api/v1/models/{model['id']}/endpoints").json()['data']['endpoints']
+        for endpoint in endpoints:
+            if "tools" in endpoint['supported_parameters']:
+                return model
+    except Exception as e:
+        print(f"Error checking {model['id']}: {e}")
+    return None
 
-
+def list_tools_models():
+        models = requests.get("https://openrouter.ai/api/v1/models").json()['data']
+        tool_models = [model for model in parallel_execute(check_model_tools, [{"model": model} for model in models]) if model]
+        return tool_models
 def check_str_is_http(x: str) -> str:
     http_url_adapter = TypeAdapter(HttpUrl)
     return str(http_url_adapter.validate_python(x))
 
+class OpenRouterArch(BaseModel):
+    modality: str
+    tokenizer: str
+    instruct_type: str
+
+class OpenRouterPricing(BaseModel):
+    prompt: float
+    completion: float
+    image: float
+    request: float
+
+class OpenRouterModel(BaseModel):
+    id: str
+    name: str
+    created: int
+    description: str
+    context_length: int
+    architecture: OpenRouterArch
+    pricing: OpenRouterPricing
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -35,23 +58,12 @@ class Settings(BaseSettings):
     HOST: str = "localhost"
     PORT: int = 8000
 
-    AUTH_SECRET: SecretStr | None = None
+    OPEN_ROUTER_API_KEY: SecretStr
 
-    OPENAI_API_KEY: SecretStr | None = None
-    DEEPSEEK_API_KEY: SecretStr | None = None
-    ANTHROPIC_API_KEY: SecretStr | None = None
-    GOOGLE_API_KEY: SecretStr | None = None
-    GROQ_API_KEY: SecretStr | None = None
-    USE_AWS_BEDROCK: bool = False
-    USE_FAKE_MODEL: bool = False
+    DEFAULT_MODEL: OpenRouterModel | None = None  # type: ignore[assignment]
+    AVAILABLE_MODELS: list[OpenRouterModel] = list()  # type: ignore[assignment]
 
-    OLLAMA_BASE_URL: str = "http://localhost:11434" 
-
-    # If DEFAULT_MODEL is None, it will be set in model_post_init
-    DEFAULT_MODEL: AllModelEnum | None = None  # type: ignore[assignment]
-    AVAILABLE_MODELS: set[AllModelEnum] = set()  # type: ignore[assignment]
-
-    OPENWEATHERMAP_API_KEY: SecretStr | None = None
+    DEFAULT_STREAMING: bool | None = True
 
     LANGCHAIN_TRACING_V2: bool = False
     LANGCHAIN_PROJECT: str = "default"
@@ -60,52 +72,25 @@ class Settings(BaseSettings):
     )
     LANGCHAIN_API_KEY: SecretStr | None = None
 
-    def model_post_init(self, __context: Any) -> None:
-        api_keys = {
-            Provider.OPENAI: self.OPENAI_API_KEY,
-            Provider.DEEPSEEK: self.DEEPSEEK_API_KEY,
-            Provider.ANTHROPIC: self.ANTHROPIC_API_KEY,
-            Provider.GOOGLE: self.GOOGLE_API_KEY,
-            Provider.GROQ: self.GROQ_API_KEY,
-            Provider.AWS: self.USE_AWS_BEDROCK,
-            Provider.FAKE: self.USE_FAKE_MODEL,
-        }
-        active_keys = [k for k, v in api_keys.items() if v]
-        if not active_keys:
-            raise ValueError("At least one LLM API key must be provided.")
+    def check_ollama_service_sync(self):
+        """
+        Synchronous version to check if Ollama service is running on port 11434.
+        Returns tuple of (bool, str) indicating status and message.
+        """
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(2)
+        try:
+            result = sock.connect_ex(('localhost', self.OLLAMA_PORT))
+            return result == 0
+        except socket.error:
+            return False
+        finally:
+            sock.close()
 
-        for provider in active_keys:
-            match provider:
-                case Provider.OPENAI:
-                    if self.DEFAULT_MODEL is None:
-                        self.DEFAULT_MODEL = OpenAIModelName.GPT_4O_MINI
-                    self.AVAILABLE_MODELS.update(set(OpenAIModelName))
-                case Provider.DEEPSEEK:
-                    if self.DEFAULT_MODEL is None:
-                        self.DEFAULT_MODEL = DeepseekModelName.DEEPSEEK_CHAT
-                    self.AVAILABLE_MODELS.update(set(DeepseekModelName))
-                case Provider.ANTHROPIC:
-                    if self.DEFAULT_MODEL is None:
-                        self.DEFAULT_MODEL = AnthropicModelName.HAIKU_3
-                    self.AVAILABLE_MODELS.update(set(AnthropicModelName))
-                case Provider.GOOGLE:
-                    if self.DEFAULT_MODEL is None:
-                        self.DEFAULT_MODEL = GoogleModelName.GEMINI_15_FLASH
-                    self.AVAILABLE_MODELS.update(set(GoogleModelName))
-                case Provider.GROQ:
-                    if self.DEFAULT_MODEL is None:
-                        self.DEFAULT_MODEL = GroqModelName.LLAMA_31_8B
-                    self.AVAILABLE_MODELS.update(set(GroqModelName))
-                case Provider.AWS:
-                    if self.DEFAULT_MODEL is None:
-                        self.DEFAULT_MODEL = AWSModelName.BEDROCK_HAIKU
-                    self.AVAILABLE_MODELS.update(set(AWSModelName))
-                case Provider.FAKE:
-                    if self.DEFAULT_MODEL is None:
-                        self.DEFAULT_MODEL = FakeModelName.FAKE
-                    self.AVAILABLE_MODELS.update(set(FakeModelName))
-                case _:
-                    raise ValueError(f"Unknown provider: {provider}")
+
+    def model_post_init(self, __context: Any) -> None:
+        self.AVAILABLE_MODELS = list_tools_models()
+        self.DEFAULT_MODEL = self.AVAILABLE_MODELS[0]
 
     @computed_field
     @property
