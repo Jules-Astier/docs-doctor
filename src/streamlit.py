@@ -13,7 +13,7 @@ from streamlit.runtime.scriptrunner import get_script_run_ctx
 from core import settings
 from docs_doctor.graph import equip_docs_doctor
 from schema import ChatHistory, ChatMessage
-from service.utils import (
+from utils.streamlit_utils import (
     convert_message_content_to_string,
     langchain_to_chat_message,
     remove_tool_calls,
