@@ -164,7 +164,6 @@ class MessageRenderer:
         message_container = st.chat_message("ai") if not existing_messages else None
         
         async for msg in messages_agen:
-            print("STREAMING MSG: ", msg)
             if isinstance(msg, str):
                 if not existing_messages:
                     if not streaming_placeholder:
