@@ -1,7 +1,7 @@
 {
   "dockerfile_lines": [],
   "graphs": {
-    "docs_doctor": "./src/docs_doctor/graph.py:docs_doctor"
+    "docs_doctor": "./docs_doctor/agent/graph.py:docs_doctor"
   },
   "env": ".env",
   "python_version": "3.12",

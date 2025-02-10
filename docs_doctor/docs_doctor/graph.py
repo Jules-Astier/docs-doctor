@@ -10,10 +10,10 @@ from langgraph.graph import StateGraph
 from langgraph.prebuilt import ToolNode
 from langgraph.checkpoint.memory import MemorySaver
 
-from src.agent.configuration import Configuration
-from src.agent.state import InputState, State
-from src.agent.tools import select_tools
-from src.agent.utils import call_model
+from docs_doctor.agent.configuration import Configuration
+from docs_doctor.agent.state import InputState, State
+from docs_doctor.agent.tools import select_tools
+from docs_doctor.agent.utils import call_model
 
 def equip_docs_doctor(package_names: List[str] | None = None):
     """Pass packages names to equip DocsDoctor with package experts."""

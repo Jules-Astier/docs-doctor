@@ -6,7 +6,7 @@ from pydantic import BeforeValidator, HttpUrl, SecretStr, TypeAdapter, computed_
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 import requests
-from src.utils.multiprocessing import parallel_execute
+from docs_doctor.utils.multiprocessing import parallel_execute
 def check_model_tools(model):
     try:
         endpoints = requests.get(f"https://openrouter.ai/api/v1/models/{model['id']}/endpoints").json()['data']['endpoints']

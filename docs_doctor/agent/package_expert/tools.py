@@ -12,8 +12,8 @@ from langchain_core.tools import InjectedToolArg
 from typing_extensions import Annotated
 from langgraph.types import Command
 
-from src.agent.utils import embedding_model
-from src.utils import supabase
+from docs_doctor.agent.utils import embedding_model
+from docs_doctor.utils import supabase
 
 async def get_embedding(
     text: str,

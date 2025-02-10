@@ -4,7 +4,6 @@ This module defines a custom reasoning and action agent graph.
 It invokes tools in a simple loop.
 """
 
-from src.agent.graph import docs_doctor
-from dotenv import load_dotenv
-load_dotenv('./.env')
-__all__ = ["docs_doctor"]
+from agent.package_expert.graph import create_package_expert
+
+__all__ = ["create_package_expert"]

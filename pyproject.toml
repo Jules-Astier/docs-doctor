@@ -45,10 +45,10 @@ build-backend = "hatchling.build"
 docs-doctor = "cli:cli"
 
 [tool.hatch.build.targets.sdist]
-include = ["/src"]
+include = ["/docs_doctor"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["/src"]
+packages = ["/docs_doctor"]
 
 [tool.ruff]
 lint.select = [

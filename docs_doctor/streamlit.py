@@ -10,15 +10,15 @@ from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 from langchain_core.runnables import RunnableConfig
 from streamlit.runtime.scriptrunner import get_script_run_ctx
 
-from src.core import settings
-from src.agent.graph import equip_docs_doctor
-from src.schema import ChatHistory, ChatMessage
-from src.utils.streamlit_utils import (
+from docs_doctor.core import settings
+from docs_doctor.agent.graph import equip_docs_doctor
+from docs_doctor.schema import ChatHistory, ChatMessage
+from docs_doctor.utils.streamlit_utils import (
     convert_message_content_to_string,
     langchain_to_chat_message,
     remove_tool_calls,
 )
-from src.utils.packages import get_available_packages, get_local_packages
+from docs_doctor.utils.packages import get_available_packages, get_local_packages
 
 APP_TITLE = "DocsDoctor"
 APP_ICON = "🧰"
