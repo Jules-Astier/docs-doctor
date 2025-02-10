@@ -1,6 +1,5 @@
 """Utility & helper functions."""
 
-from supabase import Client
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import BaseMessage
 from langchain_openai import OpenAIEmbeddings

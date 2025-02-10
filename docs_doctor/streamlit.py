@@ -2,7 +2,6 @@ import asyncio
 import logging
 from types import SimpleNamespace
 from typing import Any, AsyncGenerator
-from uuid import uuid4
 
 import streamlit as st
 from dotenv import load_dotenv
