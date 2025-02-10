@@ -42,10 +42,10 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project.scripts]
-docs-doctor = "docs_doctor/cli:cli"
+docs-doctor = "docs_doctor.cli:cli"
 
 [tool.hatch.build.targets.sdist]
-include = ["docs_doctor"]
+include = ["/docs_doctor"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["docs_doctor"]

@@ -1,4 +1,4 @@
-from utils import supabase
+from docs_doctor.utils import supabase
 from pathlib import Path
 import tomli  # for pyproject.toml
 import re
