@@ -1,4 +1,4 @@
-from schema.schema import (
+from src.schema.schema import (
     AgentInfo,
     ChatHistory,
     ChatHistoryInput,

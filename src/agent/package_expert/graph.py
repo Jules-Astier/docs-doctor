@@ -2,25 +2,23 @@
 
 Works with a chat model with tool calling support.
 """
+
 from typing import Dict, List, Literal, cast
 
 from langchain_core.messages import AIMessage
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import StateGraph
 from langgraph.prebuilt import ToolNode
-from langgraph.checkpoint.memory import MemorySaver
 
-from docs_doctor.configuration import Configuration
-from docs_doctor.state import InputState, State
-from docs_doctor.tools import select_tools
-from docs_doctor.utils import call_model
+from src.agent.package_expert.configuration import Configuration
+from src.agent.package_expert.state import InputState, State
+from src.agent.package_expert.tools import TOOLS
+from src.agent.utils import call_model
 
-def equip_docs_doctor(package_names: List[str] | None = None):
-    """Pass packages names to equip DocsDoctor with package experts."""
-    print("EQUIP PACKAGES: ", package_names)
+# Define the function that calls the model
 
-    # Define the function that calls the model
-    async def package_supervisor(
+def create_package_expert(package_name):
+    async def package_expert(
         state: State, config: RunnableConfig
     ) -> Dict[str, List[AIMessage]]:
         """Call the LLM powering our "agent".
@@ -37,10 +35,12 @@ def equip_docs_doctor(package_names: List[str] | None = None):
         configuration = Configuration.from_runnable_config(config)
 
         # Initialize the model with tool binding. Change the model or add more tools here.
-        model = call_model(config).bind_tools(select_tools(package_names))
+        model = call_model(config).bind_tools(TOOLS)
 
         # Format the system prompt. Customize this to change the agent's behavior.
-        system_message = configuration.system_prompt
+        system_message = configuration.system_prompt.format(
+            package_name=package_name
+        )
 
         # Get the model's response
         response = cast(
@@ -61,23 +61,23 @@ def equip_docs_doctor(package_names: List[str] | None = None):
                 ]
             }
         
+        # Inject package name
         if response.tool_calls:
-            print("TOOL CALLS: ", response.tool_calls)
+            for tool_call in response.tool_calls:
+                tool_call["args"]["package_name"] = package_name
         
         return {"messages": [response]}
 
     # Define a new graph
-
     builder = StateGraph(State, input=InputState, config_schema=Configuration)
 
     # Define the two nodes we will cycle between
-    builder.add_node(package_supervisor)
-    builder.add_node("tools", ToolNode(select_tools(package_names)))
-    # builder.add_node(package_aggregator)
+    builder.add_node(package_expert)
+    builder.add_node("tools", ToolNode(TOOLS))
 
-    # Set the entrypoint as `package_supervisor`
+    # Set the entrypoint as `package_expert`
     # This means that this node is the first one called
-    builder.add_edge("__start__", "package_supervisor")
+    builder.add_edge("__start__", "package_expert")
 
 
     def route_model_output(state: State) -> Literal["__end__", "tools"]:
@@ -103,34 +103,24 @@ def equip_docs_doctor(package_names: List[str] | None = None):
         return "tools"
 
 
-    # Add a conditional edge to determine the next step after `package_supervisor`
+    # Add a conditional edge to determine the next step after `package_expert`
     builder.add_conditional_edges(
-        "package_supervisor",
-        # After package_supervisor finishes running, the next node(s) are scheduled
+        "package_expert",
+        # After package_expert finishes running, the next node(s) are scheduled
         # based on the output from route_model_output
         route_model_output,
     )
 
-    # Add a normal edge from `tools` to `package_supervisor`
+    # Add a normal edge from `tools` to `package_expert`
     # This creates a cycle: after using tools, we always return to the model
-    builder.add_edge("tools", "package_supervisor")
+    builder.add_edge("tools", "package_expert")
 
     # Compile the builder into an executable graph
     # You can customize this by adding interrupt points for state updates
-    docs_doctor = builder.compile(
+    graph = builder.compile(
         interrupt_before=[],  # Add node names here to update state before they're called
         interrupt_after=[],  # Add node names here to update state after they're called
-        checkpointer=MemorySaver(),
     )
-    docs_doctor.name = "DocsDoctor"  # This customizes the name in LangSmith
+    graph.name = f"{package_name} Expert"  # This customizes the name in LangSmith
 
-    return docs_doctor
-
-docs_doctor = equip_docs_doctor()
-
-def invoke_docs_doctor(st_messages, callables):
-    # Ensure the callables parameter is a list as you can have multiple callbacks
-    if not isinstance(callables, list):
-        raise TypeError("callables must be a list")
-    # Invoke the graph with the current messages and callback configuration
-    return docs_doctor.invoke({"messages": st_messages}, config={"callbacks": callables})
+    return graph

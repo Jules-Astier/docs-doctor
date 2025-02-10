@@ -7,7 +7,7 @@ from typing import Annotated, Optional
 
 from langchain_core.runnables import RunnableConfig, ensure_config
 
-from docs_doctor import prompts
+from src.agent.package_expert import prompts
 
 
 @dataclass(kw_only=True)

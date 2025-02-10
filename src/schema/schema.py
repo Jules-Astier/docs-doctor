@@ -1,6 +1,6 @@
 from typing import Any, Literal, NotRequired
 
-from core.settings import OpenRouterModel
+from src.core.settings import OpenRouterModel
 from pydantic import BaseModel, Field, SerializeAsAny
 from typing_extensions import TypedDict
 

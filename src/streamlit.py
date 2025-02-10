@@ -10,15 +10,15 @@ from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 from langchain_core.runnables import RunnableConfig
 from streamlit.runtime.scriptrunner import get_script_run_ctx
 
-from core import settings
-from docs_doctor.graph import equip_docs_doctor
-from schema import ChatHistory, ChatMessage
-from utils.streamlit_utils import (
+from src.core import settings
+from src.agent.graph import equip_docs_doctor
+from src.schema import ChatHistory, ChatMessage
+from src.utils.streamlit_utils import (
     convert_message_content_to_string,
     langchain_to_chat_message,
     remove_tool_calls,
 )
-from utils.packages import get_available_packages, get_local_packages
+from src.utils.packages import get_available_packages, get_local_packages
 
 APP_TITLE = "DocsDoctor"
 APP_ICON = "🧰"
@@ -305,34 +305,30 @@ def setup_model_selection(agent_client: DirectAgentClient):
     return st.session_state.selected_model['id']
 
 async def handle_user_input(agent_client: DirectAgentClient, 
-                          user_input: str, 
-                          model: str,
-                          use_streaming: bool):
-    user_message = ChatMessage(type="human", content=user_input)
-    st.session_state.messages.append(user_message)
-    MessageRenderer.render_message(user_message)
-    
-    try:
-        if use_streaming:
-            stream = agent_client.astream(
-                message=user_input,
-                model=model,
-                thread_id=st.session_state.thread_id,
-            )
-            await MessageRenderer.render_stream(stream)
-        else:
-            response = await agent_client.ainvoke(
-                message=user_input,
-                model=model,
-                thread_id=st.session_state.thread_id,
-            )
-            st.session_state.messages.append(response)
-            MessageRenderer.render_message(response)
-        
-        st.rerun()
-    except Exception as e:
-        logger.error(f"Error generating response: {e}")
-        st.error(f"Error generating response: {e}")
+							user_input: str, 
+							model: str,
+							use_streaming: bool):
+	user_message = ChatMessage(type="human", content=user_input)
+	st.session_state.messages.append(user_message)
+	MessageRenderer.render_message(user_message)
+
+	if use_streaming:
+		stream = agent_client.astream(
+			message=user_input,
+			model=model,
+			thread_id=st.session_state.thread_id,
+		)
+		await MessageRenderer.render_stream(stream)
+	else:
+		response = await agent_client.ainvoke(
+			message=user_input,
+			model=model,
+			thread_id=st.session_state.thread_id,
+		)
+		st.session_state.messages.append(response)
+		MessageRenderer.render_message(response)
+
+	st.rerun()
 
 async def main():
 	setup_page()
